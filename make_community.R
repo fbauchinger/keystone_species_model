@@ -2,8 +2,49 @@
 # adapted from "Deciphering microbial interactions and detecting keystone species with co-occurrence networks" (Berry and Widder; 2014)
 # https://doi.org/10.3389/fmicb.2014.00219
 
+
 ### Lotka-Volterra multispecies model
-### input parameters, output structure and usage at the bottom
+
+############################################################################
+### INPUT PARAMETERS
+
+# time = list with "start", "end" and "steps"
+# C = connectivity of the interaction network (overall connectivity, independent of structure), 
+#     can also be a vector of values (program will loop through)
+#     in a highly structured network (klemm1 and klemm2) lower connectivities can already lead to abundance explosions
+# siteRich = average number of species at a given site
+# sharedSp = proportion of species at a site that are shared with at least one other site
+# sites = number of sites simulated (each site is a separate model run)
+# IntType = type of network: "random" for uniformly distributed interactions
+#                            "klemm1" for a klemm-eguiluz network with clique.size = 2 (see seqtime documentation)
+#                            "klemm2" for a klemm-eguiluz network with clique.size = 8 (see seqtime documentation)
+#           can also be a vector of network types (programm will loop through)
+# mode = gives the structure of the model parameters
+#        "mode1": growth rate at 0.5 for all species, carrying capacity at 50 for all species, network according to IntType with IA-strength [-0.99;0.99]
+#        "mode2": carrying capacities and IA-Network as mode1, growth rates drawn from an exponential distribution with values [0;1]
+#        "mode3": IA-Network as mode1, growth rates as mode2, carrying capacities drawn from a broken stick distribution (function in vegan) with count between 3000 and 5000
+# K = depending on the mode, either carrying capacity for all species or maximum carrying capacity
+# pInt = partition analysis. Split sites in two equal sized groups and partition species between them with an intensity of 0 (none) to 1 (perfect exclusion). (PInt+1)*SharedSp must be less than or equal to 1!!!!
+# neg = negative edge percentage of the interaction network (NOTE: negative edges are positive interactions!!, more negative interactions can prevent abundance explosions to some extent)
+# adjIA = if TRUE, the nodes with the most edges are adjusted so they have either particularly strong out- or in-going interactions (keeping the overall interactions the same)
+
+
+############################################################################
+### OUTPUT
+# runA
+## $Ab = abundance table; sites in rows, species in columns
+## $alpha = interaction matrix (N x N; N = number of species simulated)
+## $growth = growth rates per species (as specified by "mode" in input parameters)
+## $carcap = carrying capacity (as specified by "mode" in input parameters)
+## $init = initial abundances for each species and each simulated site (sampled from a uniform distribution, for details see documentation of seqtime::generateAbundances)
+## $time = list with "start"-timepoint, "end"-timepoint and "steps" (as specified with input parameters)
+
+
+
+############################################################################
+# USAGE:
+# R CMD BATCH '--args time=list(start=0,end=200,steps=1000) C=c(0.02,0.03) siteRich=10 sharedSp=0.8 sites=10 IntType=c("klemm1","random") mode=1 K=10 pInt=0 neg=40 adjIA=FALSE' make_community.R make_community_log.txt
+
 
 # load libraries
 library(deSolve)
@@ -248,46 +289,5 @@ for (i in 1:length(IntType)) { # loop through multiple network times
     save(runA, file=paste("Model_glv_C_",C[j],"_neg_",neg,"_mode_",mode,"_adjIA_",adjIA,"_R_",siteRich,"_ss_",sharedSp,"_s_",sites,"_IntType_",IntType[i],"_comm.RData",sep=""))
   }
 }
-
-
-############################################################################
-### INPUT PARAMETERS
-
-# time = list with "start", "end" and "steps"
-# C = connectivity of the interaction network (overall connectivity, independent of structure), 
-#     can also be a vector of values (program will loop through)
-#     in a highly structured network (klemm1 and klemm2) lower connectivities can already lead to abundance explosions
-# siteRich = average number of species at a given site
-# sharedSp = proportion of species at a site that are shared with at least one other site
-# sites = number of sites simulated (each site is a separate model run)
-# IntType = type of network: "random" for uniformly distributed interactions
-#                            "klemm1" for a klemm-eguiluz network with clique.size = 2 (see seqtime documentation)
-#                            "klemm2" for a klemm-eguiluz network with clique.size = 8 (see seqtime documentation)
-#           can also be a vector of network types (programm will loop through)
-# mode = gives the structure of the model parameters
-#        "mode1": growth rate at 0.5 for all species, carrying capacity at 50 for all species, network according to IntType with IA-strength [-0.99;0.99]
-#        "mode2": carrying capacities and IA-Network as mode1, growth rates drawn from an exponential distribution with values [0;1]
-#        "mode3": IA-Network as mode1, growth rates as mode2, carrying capacities drawn from a broken stick distribution (function in vegan) with count between 3000 and 5000
-# K = depending on the mode, either carrying capacity for all species or maximum carrying capacity
-# pInt = partition analysis. Split sites in two equal sized groups and partition species between them with an intensity of 0 (none) to 1 (perfect exclusion). (PInt+1)*SharedSp must be less than or equal to 1!!!!
-# neg = negative edge percentage of the interaction network (NOTE: negative edges are positive interactions!!, more negative interactions can prevent abundance explosions to some extent)
-# adjIA = if TRUE, the nodes with the most edges are adjusted so they have either particularly strong out- or in-going interactions (keeping the overall interactions the same)
-
-
-############################################################################
-### OUTPUT
-# runA
-## $Ab = abundance table; sites in rows, species in columns
-## $alpha = interaction matrix (N x N; N = number of species simulated)
-## $growth = growth rates per species (as specified by "mode" in input parameters)
-## $carcap = carrying capacity (as specified by "mode" in input parameters)
-## $init = initial abundances for each species and each simulated site (sampled from a uniform distribution, for details see documentation of seqtime::generateAbundances)
-## $time = list with "start"-timepoint, "end"-timepoint and "steps" (as specified with input parameters)
-
-
-
-############################################################################
-# USAGE:
-# R CMD BATCH '--args time=list(start=0,end=200,steps=1000) C=c(0.02,0.03) siteRich=10 sharedSp=0.8 sites=10 IntType=c("klemm1","random") mode=1 K=10 pInt=0 neg=40 adjIA=FALSE' make_community.R make_community_log.txt
 
 
