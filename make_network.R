@@ -2,11 +2,45 @@
 # adapted from "Deciphering microbial interactions and detecting keystone species with co-occurrence networks" (Berry and Widder; 2014)
 # https://doi.org/10.3389/fmicb.2014.00219
 
+
 ### compute correlation networks based on output from Lotka-Volterra multispecies model (make_community.R)
 ### correlation coefficients are compared to a null distribution to assess significance
 
 ### this script should be in the same directory as the .RData output from make_community.R
-### input parameters, output structure and usage at the bottom
+
+
+############################################################################
+### INPUT PARAMETERS
+
+# Cortype = correlation type; one of "spearman", "pearson" or "kendall", as specified in the documentation of stats::cor() 
+# its = number of permutations performed to calculate null distribution 
+
+## loads output of make_community.R (yourfilename_comm.RData); 
+## this should therefore be in the same folder
+
+############################################################################
+### OUTPUT
+
+# runB
+
+## $network:
+### $target = target species (note that correlation coefficients are not directional, despite this naming convention)
+### $source = source species (note that correlation coefficients are not directional, despite this naming convention)
+### $strength = correlation coefficient between target and source species
+### $alpha = interaction strength between target and source species, as used in LVM
+### $Pvals = p-value of correlation coefficient, computed by comparison to a null distribution
+### $strength_abs = absolute correlation coefficient between target and source species
+### $sign = sign of the correlation coefficient between target and source species
+
+## $IntMat = interaction matrix (N x N matrix; N = number of species simulated)
+
+## $sigCC = correlation coefficients between species (N x N matrix, N = number of species simulated; correlation type according to input parameter) 
+
+
+############################################################################
+# USAGE:
+# R CMD BATCH '--args Cortype="spear" its=1000' make_network.R make_network_log.txt
+
 
 
 # load libraries
@@ -101,36 +135,4 @@ for (i in 1:length(InComm)) {
   
 }
 
-
-############################################################################
-### INPUT PARAMETERS
-
-# Cortype = correlation type; one of "spearman", "pearson" or "kendall", as specified in the documentation of stats::cor() 
-# its = number of permutations performed to calculate null distribution 
-
-## loads output of make_community.R (yourfilename_comm.RData); 
-## this should therefore be in the same folder
-
-############################################################################
-### OUTPUT
-
-# runB
-
-## $network:
-### $target = target species (note that correlation coefficients are not directional, despite this naming convention)
-### $source = source species (note that correlation coefficients are not directional, despite this naming convention)
-### $strength = correlation coefficient between target and source species
-### $alpha = interaction strength between target and source species, as used in LVM
-### $Pvals = p-value of correlation coefficient, computed by comparison to a null distribution
-### $strength_abs = absolute correlation coefficient between target and source species
-### $sign = sign of the correlation coefficient between target and source species
-
-## $IntMat = interaction matrix (N x N matrix; N = number of species simulated)
-
-## $sigCC = correlation coefficients between species (N x N matrix, N = number of species simulated; correlation type according to input parameter) 
-
-
-############################################################################
-# USAGE:
-# R CMD BATCH '--args Cortype="spear" its=1000' make_network.R make_network_log.txt
 
