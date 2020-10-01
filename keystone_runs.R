@@ -2,6 +2,7 @@
 # adapted from "Deciphering microbial interactions and detecting keystone species with co-occurrence networks" (Berry and Widder; 2014)
 # https://doi.org/10.3389/fmicb.2014.00219
 
+
 ### re-runs multispecies Lotka-Volterra model as specified in make_community.R
 ### in each run, abundance of one species is set to 0
 ### the distance between the initial model run, with the species present, and the model run with the species absent, is calculated
@@ -9,7 +10,54 @@
 ### this average distance is taken as a proxy for a species keystone potential
 
 ### this script should be in the same directory as the .RData output from make_community.R
-### input parameters, output structure and usage at the bottom
+
+
+############################################################################
+### INPUT PARAMETERS
+
+# it = number of iterations performed
+
+## loads output of make_community.R (yourfilename_comm.RData); 
+## this should therefore be in the same folder
+
+
+############################################################################
+### OUTPUT
+
+# runKey
+
+## $sites:
+
+## $keyrun: (list of "it" entries, one per iteration; according to input parameter)
+### $Ab = abundance table; columns are species, rows indicate which species was set to zero in this simulation run
+### $init = initial abundances for each species and each simulated site (sampled from a uniform distribution, for details see documentation of seqtime::generateAbundances)
+### $growth = growth rates per species (as specified by "mode" in input parameters)
+### $carcap = carrying capacity (as specified by "mode" in input parameters)
+### $alpha = interaction matrix (N x N; N = number of species simulated)
+
+## $networkStats: (list of "it" entries, one per iteration; according to input parameter)
+### each entry is a matrix containing network statistics for each species 
+### (entries per species are identical in each matrix, except for the run where the species was set to 0)
+
+### network statistics computed are:
+#### bray.dist = Bray-Curtis dissimilarity (with vegdist); average BC-dissimilarity between communities without a particular species
+#### canberra.dist = Canberra distance (with vegdist); average Canberra distance between communities without a particular species
+#### bray.dist.norm = bray.dist normalized for the inital species abundances
+#### canberra.dist.norm = canberra.dist normalized for the inital species abundances
+#### cb = betweenness centrality, calculated with igraph::betweenness
+#### cc = closeness centrality, calculated with igraph::closeness
+#### cc_rel = relative closeness centrality; normalized to the number of edges in the network
+#### md = node degree, calculated with graph::degree
+#### clust = clustering coefficient or local transitivity, calculated with igraph::transitivity with type=local
+#### eigen.centr = eigenvector centralities, calculated with igraph::eigen_centrality
+#### alpha.centr = alpha centrality, calculated with igraph:alpha_centrality
+#### transitivity = weighted transitivity, calculated with igraph::transitivity with type = "weighted"
+
+
+############################################################################
+# USAGE:
+# R CMD BATCH '--args it=1000 keystone_stat.R keystone_stat_log.txt
+
 
 
 # load libraries
@@ -186,49 +234,3 @@ runKey<-list(sites=chosen_sites,keyrun=keyrun,networkStats=ndat)
 save(runKey, file=paste(basename,"_keystones.RData",sep=""))
 }
 
-
-############################################################################
-### INPUT PARAMETERS
-
-# it = number of iterations performed
-
-## loads output of make_community.R (yourfilename_comm.RData); 
-## this should therefore be in the same folder
-
-
-############################################################################
-### OUTPUT
-
-# runKey
-
-## $sites:
-
-## $keyrun: (list of "it" entries, one per iteration; according to input parameter)
-### $Ab = abundance table; columns are species, rows indicate which species was set to zero in this simulation run
-### $init = initial abundances for each species and each simulated site (sampled from a uniform distribution, for details see documentation of seqtime::generateAbundances)
-### $growth = growth rates per species (as specified by "mode" in input parameters)
-### $carcap = carrying capacity (as specified by "mode" in input parameters)
-### $alpha = interaction matrix (N x N; N = number of species simulated)
-
-## $networkStats: (list of "it" entries, one per iteration; according to input parameter)
-### each entry is a matrix containing network statistics for each species 
-### (entries per species are identical in each matrix, except for the run where the species was set to 0)
-
-### network statistics computed are:
-#### bray.dist = Bray-Curtis dissimilarity (with vegdist); average BC-dissimilarity between communities without a particular species
-#### canberra.dist = Canberra distance (with vegdist); average Canberra distance between communities without a particular species
-#### bray.dist.norm = bray.dist normalized for the inital species abundances
-#### canberra.dist.norm = canberra.dist normalized for the inital species abundances
-#### cb = betweenness centrality, calculated with igraph::betweenness
-#### cc = closeness centrality, calculated with igraph::closeness
-#### cc_rel = relative closeness centrality; normalized to the number of edges in the network
-#### md = node degree, calculated with graph::degree
-#### clust = clustering coefficient or local transitivity, calculated with igraph::transitivity with type=local
-#### eigen.centr = eigenvector centralities, calculated with igraph::eigen_centrality
-#### alpha.centr = alpha centrality, calculated with igraph:alpha_centrality
-#### transitivity = weighted transitivity, calculated with igraph::transitivity with type = "weighted"
-
-
-############################################################################
-# USAGE:
-# R CMD BATCH '--args it=1000 keystone_stat.R keystone_stat_log.txt
