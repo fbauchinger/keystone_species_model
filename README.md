@@ -1,7 +1,7 @@
 # keystone_species_model
 calculate training data and train a linear model to identify keystone species
 
-adapted from "Deciphering microbial interactions and detecting keystone species with co-occurrence networks" (Berry and Widder; 2014)  
+adapted from "Deciphering microbial interactions and detecting keystone species with co-occurrence networks" (Berry and Widder; 2014)
 https://doi.org/10.3389/fmicb.2014.00219
 
 make_community.R  
